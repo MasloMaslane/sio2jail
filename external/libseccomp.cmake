@@ -58,10 +58,16 @@ IF((NOT DEFINED LIBSECCOMP_BUILD_OWN AND (NOT EXISTS "${libseccomp_LIB_PATH}" OR
         SET(EXTRA_FLAGS "")
     ENDIF()
 
-    ExternalProject_Add(seccomp_project
+    SET(SECCOMP_EP_ARGS
         URL https://github.com/seccomp/libseccomp/releases/download/v2.5.4/libseccomp-2.5.4.tar.gz
         URL_HASH SHA256=d82902400405cf0068574ef3dc1fe5f5926207543ba1ae6f8e7a1576351dcbdb
-        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    )
+    IF(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
+        LIST(APPEND SECCOMP_EP_ARGS DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
+    ENDIF()
+
+    ExternalProject_Add(seccomp_project
+        ${SECCOMP_EP_ARGS}
 
         CONFIGURE_COMMAND
             CFLAGS=${EXTRA_FLAGS} CXXFLAGS=${EXTRA_FLAGS} <SOURCE_DIR>/configure

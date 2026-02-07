@@ -9,6 +9,7 @@ RUN apt-get update && \
 	libseccomp-dev \
 	libseccomp2 \
 	cmake \
+	gperf \
 	g++-multilib \
 	gcc-multilib \
 	wget \

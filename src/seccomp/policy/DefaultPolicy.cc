@@ -34,6 +34,7 @@ void DefaultPolicy::addExecutionControlRules(bool allowFork) {
              "sigaltstack",
              "rt_sigaction",
              "rt_sigprocmask",
+             "rt_sigreturn",
              "futex",
              "set_tid_address",
              "set_robust_list",
@@ -162,11 +163,16 @@ void DefaultPolicy::addInputOutputRules() {
 
     rules_.emplace_back(SeccompRule("ioctl", action::ActionErrno(ENOTTY)));
 
-    // Allow seeking any file other than stdin/stdou/stderr
+    // For stdin/stdout/stderr, return 0 from lseek instead of error.
+    // This allows Java's BufferedInputStream.available() to work (it calls lseek
+    // internally) while still preventing actual seeking/rewinding of input.
     for (const auto& syscall: {"lseek", "_llseek"}) {
         rules_.emplace_back(SeccompRule(
                 syscall,
-                action::ActionErrno(ESPIPE),
+                action::ActionTrace([](auto& tracee) {
+                    tracee.cancelSyscall(0);  // Return 0 instead of ESPIPE error
+                    return tracer::TraceAction::CONTINUE;
+                }),
                 filter::SyscallArg(0) <= 2));
         rules_.emplace_back(SeccompRule(
                 syscall, action::ActionAllow(), filter::SyscallArg(0) >= 3));

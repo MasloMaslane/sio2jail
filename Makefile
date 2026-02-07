@@ -8,8 +8,8 @@ ifdef CCACHE
 endif
 
 define run_in_docker
-	docker build -t sio2jail-dev .
-	- docker run -v $(shell pwd)/ccache:/ccache -v $(shell pwd):/app -e CCACHE_DIR=/ccache --rm --name $(CONTAINER_NAME) -d -it sio2jail-dev bash
+	docker build --platform linux/amd64 -t sio2jail-dev .
+	- docker run --platform linux/amd64 -v $(shell pwd)/ccache:/ccache -v $(shell pwd):/app -e CCACHE_DIR=/ccache --rm --name $(CONTAINER_NAME) -d -it sio2jail-dev bash
 	docker exec $(CONTAINER_NAME) $(1)
 	docker exec $(CONTAINER_NAME) rm -rf build
 	docker stop $(CONTAINER_NAME)
@@ -55,6 +55,6 @@ clean:
 	- rm debian/sio2jail.substvars
 
 clean-docker:
-	docker build -t sio2jail-dev .
-	- docker run -v $(shell pwd):/app --rm --name $(CONTAINER_NAME) -d -it sio2jail-dev bash
+	docker build --platform linux/amd64 -t sio2jail-dev .
+	- docker run --platform linux/amd64 -v $(shell pwd):/app --rm --name $(CONTAINER_NAME) -d -it sio2jail-dev bash
 	docker exec $(CONTAINER_NAME) make clean
